@@ -34,3 +34,4 @@ It is called the Interprocess Communicion, It is transmit/receive the data in th
   - AES GCM ( 128/256 ) with 96-bits IV
 
 ## **Cross Compile**
+  - Not yet config
