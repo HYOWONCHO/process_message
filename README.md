@@ -18,6 +18,10 @@ It is called the Interprocess Communicion, It is transmit/receive the data in th
   - Tab size : 4
   - Tap to Space 
 
+  <span style="color:blue">*Code comment style follows to the Doxygen rule*</span>
+  
+  <span style="color:green">*In terms of 3rdparty source and opensource, It is not apply*</span>
+
 # **Manual**
 
 ## Supported Attestation statement formats
