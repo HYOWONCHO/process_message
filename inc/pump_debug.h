@@ -30,14 +30,15 @@ extern "C" {
 #endif
 
 #ifdef __DBG_ENABLE__
-    #ifdef __linux__
-        #define dbg_print(fmt,...) printf("(%s:%d): "fmt"\n",__FUNCTION__,__LINE__,##__VA_ARGS__)
-        #define n_print printf
-    #else 
-        #error "PLS, MUST not used in Bare-metal System or Windows"
-    #endif
+#   ifdef __linux__
+//#       define debug_printf(fmt,...) printf("(%s:%d): "fmt"\n",__FUNCTION__,__LINE__,##__VA_ARGS__)
+#       define debug_printf(...) fprintf(stdout, ##__VA_ARGS__)
+#       define n_print printf
+#   else 
+#       error "PLS, MUST not used in Bare-metal System or Windows"
+#   endif
 #else // DBG_ENABLE
-    #define dbg_print(fmt,...)
+#   define debug_printf(fmt,...)
 #endif
 
 
