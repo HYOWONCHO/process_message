@@ -18,14 +18,14 @@
 CROSS_ARCH ?= 
 CROSS_PREFIX ?=  
 CROSS_CC := ${CROSS_PRFIX}${CROSS_ARCH}gcc
+USE_SAFECLIB ?= yes
+do_test_safestring ?= yes
 
 
-all: 
+TARGET_BIN 	:= pumpmsg
+TARGET_ROOT := $(shell pwd)
 
-check_tools:
-	-@tool_path=''; 	\
-		tool_path=$(which $CROSS_CC); 	\
-		echo "${tool_path} | ${CROSS_CC}" 
-
+OBJDIR := build/obj
+DEPDIR := build/dep
 
 
