@@ -36,7 +36,8 @@ DEFINES := -D__DBG_ENABLE__
 
 
 # Define Source 
-SRCS := main.c
+SRCS := main.c 			\
+		file_mgm.c
 
 # Use the intel safcelib 
 ifeq ($(USE_SAFECLIB), yes)

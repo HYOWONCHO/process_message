@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
@@ -31,9 +32,8 @@ extern "C" {
 
 #ifdef __DBG_ENABLE__
 #   ifdef __linux__
-//#       define debug_printf(fmt,...) printf("(%s:%d): "fmt"\n",__FUNCTION__,__LINE__,##__VA_ARGS__)
-#       define debug_printf(...) fprintf(stdout, ##__VA_ARGS__)
-#       define n_print printf
+#       define debug_printf(fmt,...) fprintf(stdout, "(DBG %s:%d): "fmt"\n",__FUNCTION__,__LINE__,##__VA_ARGS__)
+#       define n_print fprintf(stdout, ##__VA_ARGS)
 #   else 
 #       error "PLS, MUST not used in Bare-metal System or Windows"
 #   endif
@@ -41,6 +41,9 @@ extern "C" {
 #   define debug_printf(fmt,...)
 #endif
 
+
+#define err_printf(fmt,...) fprintf(stderr, "(ERR %s:%d): "fmt"\n",__FUNCTION__,__LINE__,##__VA_ARGS__)
+#define info_printf(fmt,...) fprintf(stdout, "(INFO %s:%d): "fmt"\n",__FUNCTION__,__LINE__,##__VA_ARGS__)
 
 
 #ifdef __cplusplus

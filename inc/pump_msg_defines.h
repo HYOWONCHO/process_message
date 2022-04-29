@@ -38,8 +38,12 @@
 
 
 typedef enum _m_pumperror {
-    RET_TRUE    = true,
-    RET_FAIL    = false 
+    RET_INV_PARAM = -100,
+    RET_INV_OBJ,
+    RET_INV_AID,            /**< AID can not identify */
+    RET_UNKNOWN_TYPE,
+    RET_FAIL    = -1, 
+    RET_TRUE    = 0,
 }pumperror_m;
 
 /**

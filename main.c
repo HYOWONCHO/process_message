@@ -9,5 +9,10 @@ int main(int argc, char *argv[])
     extern int test_memcmp32_s(void);
     test_memcmp32_s();
 #endif
+
+    extern int record_stream_list(void **p, int size);
+    char *p = NULL;
+    record_stream_list(&p,  1);
+    
     return 1;
 }
