@@ -37,7 +37,7 @@ DEFINES := -D__DBG_ENABLE__
 
 # Define Source 
 SRCS := main.c 			\
-		file_mgm.c
+		file_mgm.c list_manager.c
 
 # Use the intel safcelib 
 ifeq ($(USE_SAFECLIB), yes)
@@ -56,7 +56,7 @@ ifeq ($(do_test_safestring), yes)
 # 	Memory Compare testing 
 	ifeq ($(do_test_memcmp), y)
 		DEFINES += -D_DO_TEST_MEMCMP_	
-		SRCS += test_memcmp32_s.c
+		SRCS += test_memcmp32_s.c list_test.c
 	endif
 
 endif

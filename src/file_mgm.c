@@ -63,8 +63,6 @@ static int _is_image_file_format(char *path)
 done:
 
     return ret;
-
-
 }
 
 
@@ -78,7 +76,7 @@ done:
  *              otherwise, return the -1
  */
 
-int record_stream_list(void **p, int size)
+int record_stream_list(void ***p, int size)
 {
     int ret = 0L;
     DIR *dirp;
@@ -89,7 +87,7 @@ int record_stream_list(void **p, int size)
 
 
 
-    *p = (void *)calloc(1, size);
+    **p = (void *)calloc(1, sizeof(void**));
     if(*p == NULL) {
         err_printf("memory allocation %s", strerror(errno));
         return -1;
@@ -119,7 +117,11 @@ int record_stream_list(void **p, int size)
                 break;
             case S_IFREG:
                 //info_printf("%s is a regular file", check_file);
-                _is_image_file_format(rd_dir->d_name);
+                if(!_is_image_file_format(rd_dir->d_name)) {
+                    //TODO: Assign the file name on "p" buffer
+                    //strcpy_s();
+
+                }
                 break;
             default:
                 info_printf("%s is Unknown", check_file);
