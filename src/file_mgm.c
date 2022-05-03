@@ -23,6 +23,7 @@ static int _is_image_file_format(char *path)
     char delimiter = '.';
     rsize_t len;
 
+    char check_name[255] = {0, };
 
     if( path == NULL )  {
         errno = EFAULT;
@@ -31,22 +32,27 @@ static int _is_image_file_format(char *path)
     }
 
     len = strlen(path);
-    p2tok = strtok_s(path, &len, &delimiter, &p2str);
+    if(strcpy_s(check_name, sizeof check_name, path) != EOK) {
+        err_printf("check file path copy fail");
+    }
+
+    check_name[len] = '\0';
+    p2tok = strtok_s(check_name, &len, &delimiter, &p2str);
     if(p2tok == NULL) {
-        err_printf(" Delimiter \'%c\' can not found in %s", delimiter, path);
+        err_printf(" Delimiter \'%c\' can not found in %s", delimiter, check_name);
         goto done;
     }
 
-    info_printf("Token -%s- Str -%s- len = %ld", p2tok, p2str, len);
+    //info_printf("Token -%s- Str -%s- len = %ld", p2tok, p2str, len);
 
     int sz_table = sizeof prefix_table / sizeof *prefix_table;
     int x = 0L;
-
+#if 0
     if(len < 3) {
-        err_printf("%s not image file !!!", path); 
+        //err_printf("%s not image file !!!", path); 
         goto done;
     }
-
+#endif
     while(prefix_table[x] != NULL) {
         if(strncmp((const char *)p2str, (const char *)prefix_table[x], len) == 0) {
             break;
@@ -54,11 +60,12 @@ static int _is_image_file_format(char *path)
         x++;
     }
 
-    if(x == sz_table) {
-        err_printf("%s not image file !!!", path); 
+    if(x == sz_table - 1) {
+        //err_printf("%s not image file !!!", path); 
         goto done;
     }
 
+    //debug_printf("last path: %s", path);
     ret = 0L;
 done:
 
@@ -76,7 +83,7 @@ done:
  *              otherwise, return the -1
  */
 
-int record_stream_list(void ***p, int size)
+int record_stream_list(record_file_t *p, int size)
 {
     int ret = 0L;
     DIR *dirp;
@@ -85,10 +92,7 @@ int record_stream_list(void ***p, int size)
 
     char check_file[512] = {0, };
 
-
-
-    **p = (void *)calloc(1, sizeof(void**));
-    if(*p == NULL) {
+    if(p == NULL) {
         err_printf("memory allocation %s", strerror(errno));
         return -1;
     }
@@ -117,10 +121,13 @@ int record_stream_list(void ***p, int size)
                 break;
             case S_IFREG:
                 //info_printf("%s is a regular file", check_file);
+                //    info_printf("stored path: %s", rd_dir->d_name);
                 if(!_is_image_file_format(rd_dir->d_name)) {
                     //TODO: Assign the file name on "p" buffer
+                    ret++;
                     //strcpy_s();
-
+//                    info_printf("stored path: %s", rd_dir->d_name);
+                    list_insert_next(p->list, NULL, rd_dir->d_name);
                 }
                 break;
             default:
@@ -129,9 +136,35 @@ int record_stream_list(void ***p, int size)
         }
 
         memset_s((void *)&check_file[0], sizeof check_file, 0x00);
-        ret++;
     }
 
     return ret;
+
+}
+
+void file_mgm_list_destory(void *priv)
+{
+    //TODO : Add the operation when Linked list destroy is called.
+
+    info_printf("Called the Destroy callback regards to Linked Lit");
+
+}
+
+
+int file_mgm_init(record_file_t *p)
+{
+
+    if(p->is_first == false) {
+        memzero_s((void *)p, sizeof *p);
+        p->list = (list_priv_t *)calloc(1, sizeof(record_file_t));
+        if(p->list == NULL) {
+            err_printf("failed memory allocation (%s)", strerror(errno));
+            return -1;
+        }
+
+        list_initialize(p->list, file_mgm_list_destory);
+        p->is_first = true;
+    }
+    return 0;
 
 }

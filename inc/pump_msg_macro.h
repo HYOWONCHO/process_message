@@ -26,6 +26,18 @@ extern "C" {
 #endif
 
 
+#define MEM_RELEASE(x)                              \
+    ({                                              \
+        if(x != NULL) {                             \
+            free(x);                                \
+            x = NULL;                               \
+        }                                           \
+    })
+
+#define FUNC(_type, _name, _param) \
+    _type (*_name) _param
+
+
 #define SYS_ERROR_MSG()		strerror(errno)
 
 

@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include "list_manager.h"
+#include <stdbool.h>
+
 
 /**< Recorded Stream Path */
 #define RECORD_STREAM_DIR       ("/var/www/html/test")
@@ -28,5 +31,7 @@
 
 typedef struct _t_record_file_h {
     char record_name[RECORD_NAME_LEN];
-    
+    bool is_first; 
+    list_priv_t *list;
+    list_element_t *pos;
 }record_file_t;
