@@ -62,6 +62,18 @@ ifeq ($(do_test_safestring), yes)
 
 endif
 
+ifeq ($(do_test_server), yes)
+	DEFINES+=-D_APP_SERVER_
+	TARGET_BIN := $(TARGET_BIN)_server
+endif
+
+ifeq ($(do_test_client), yes)
+	DEFINES+=-D_APP_CLIENT_
+	TARGET_BIN := $(TARGET_BIN)_client
+endif
+
+
+
 SRCS := $(strip $(SRCS))
 INCLUDES := $(strip $(INCLUDES))
 DEFINES := $(strip $(DEFINES))
