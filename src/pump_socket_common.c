@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include "pump_socket_common.h"
 #include "pump_msg_macro.h"
+#include "pump_debug.h"
 
 #include "safe_mem_lib.h"
 #include "snprintf_s.h"
@@ -60,7 +62,8 @@ static socket_class_t *_accept_(socket_class_t *s, client_addr_t *c)
 
     //return a socket object initialized with client socke4t
     socket_class_t *sock = init_socket(s->_family, s->_type);
-    sock->_sockfd = client_fd; return sock;
+    sock->_sockfd = client_fd; 
+    return sock;
 }
 
 
@@ -81,7 +84,7 @@ static int _recv_(socket_class_t *s, char *buff, int max_len)
 
     bytes_recv = recv(s->_sockfd, tmp, max_len, 0);
     //snprintf(buff, max_len, "%s", tmp);
-    memcpy_s((void *)buff, bytes_recv, (void *)tmp, max_len);
+    memcpy_s((void *)buff, max_len, (void *)tmp, max_len);
 
     return bytes_recv;
 }
@@ -91,12 +94,13 @@ static int _recv_(socket_class_t *s, char *buff, int max_len)
 static void _create_(socket_class_t *s, int type, const char *ip_addr, int port)
 {
     char sport[6];
+    int ret = 0;
 
-    // conver to port number
-    if(snprintf_s_i((char *)sport, sizeof sport, "%s", port)) {
+    if(snprintf_s_i((char *)sport, sizeof sport, "%d", port) <= 0) {
         s->_exit_error(s, "Error converting port number to string");
     }
 
+    //debug_printf("sport : %s", sport);
     if(type == INET_SOCKET_SERVER) {
         s->_addrinfo_hints.ai_flags = AI_PASSIVE;
     }

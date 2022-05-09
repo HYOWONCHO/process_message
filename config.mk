@@ -19,7 +19,9 @@ CROSS_ARCH ?=
 CROSS_PREFIX ?=  
 CROSS_CC := ${CROSS_PRFIX}${CROSS_ARCH}gcc
 USE_SAFECLIB ?= yes
-do_test_safestring ?= yes
+USE_CURL ?= yes
+
+V=@
 
 
 TARGET_BIN 	:= pumpmsg

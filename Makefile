@@ -30,6 +30,7 @@ vpath %.c $(TARGET_ROOT)/src
 # Defafult Header Path
 INCLUDES := -I$(TARGET_ROOT)/inc
 
+LIBRARY :=
 
 # Default Macro define
 DEFINES := -D__DBG_ENABLE__
@@ -38,7 +39,15 @@ DEFINES := -D__DBG_ENABLE__
 # Define Source 
 SRCS := main.c 						\
 		file_mgm.c list_manager.c 	\
-		pump_socket_common.c
+		pump_socket_common.c 		\
+
+
+ifeq ($(USE_CURL), yes)
+	SRCS += curl_usage_api.c
+	LIBRARY += -lcurl
+	DEFINES += -D__USED_CURL__ 
+endif
+
 
 # Use the intel safcelib 
 ifeq ($(USE_SAFECLIB), yes)
@@ -82,14 +91,14 @@ OBJS 	:= $(strip $(patsubst %.c,$(OBJDIR)/%.o,$(SRCS)))
 DEPS 	:= $(strip $(patsubst %.c,$(OBJDIR)/%.dep,$(SRCS)))
 
 
-C_FLAGS := $(INCLUDES)
-LD_FLAGS :=
+C_FLAGS := $(INCLUDES)  $(LIBRARY)
+LD_FLAGS := $(LIBRARY)
 
 .SUFFIXES: .o .c
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
 	@echo "C Complie : $<"
-	$(V)$(CROSS_CC) $(C_FLAGS) $(DEFINES) -c $< -o $@
+	$(V)$(CROSS_CC) $(DEFINES) -c $< -o $@  $(C_FLAGS)
 	
 #.SUFFIXES: .o .dep
 #$(DEPDIR)/%.o : %.dep 
@@ -101,7 +110,7 @@ $(OBJDIR)/%.o : %.c
 
 
 all:$(OBJS)
-	$(V)$(CROSS_CC) -o build/$(TARGET_BIN)  $(OBJS)
+	$(CROSS_CC) -o build/$(TARGET_BIN)  $(OBJS) $(LD_FLAGS)
 
 dep: $(DEPS)
 

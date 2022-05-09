@@ -32,6 +32,7 @@
 #include "safe_str_constraint.h"
 #include "safe_str_lib.h"
 #include "snprintf_s.h"
+#include "pump_debug.h"
 
 #define FMT_CHAR    'c'
 #define FMT_WCHAR   'C'
@@ -63,8 +64,10 @@ parse_format(const char *format, char pformatList[], unsigned int maxFormats)
 	unsigned int  start = 0;
 	char		  lmod = 0;
 
+    //debug_printf("format : %s ", format);
 	while (index < RSIZE_MAX_STR && format[index] != '\0' && numFormats < maxFormats)
 	{
+        //debug_printf("format[%d] = %c", index, format[index]);
 		if (format[index] == '%') {
 			start = index; // remember where the format string started
 			// Check for flags
@@ -229,10 +232,11 @@ inline int snprintf_s_i(char *dest, rsize_t dmax, const char *format, int a)
 	// Check that there are not too many format options
 	if ( nfo != 1 ) {
 		dest[0] = '\0';
-		return SNPRFNEGATE(ESBADFMT);
 	}
+
 	// Check that the format is for an integer type
 	if ( check_integer_format(pformatList[index]) == 0) {
+        debug_printf();
 		dest[0] = '\0';
 		return SNPRFNEGATE(ESFMTTYP);
 	}
