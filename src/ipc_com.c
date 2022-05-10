@@ -96,6 +96,15 @@ static int ipc_com_receive(void *p)
 {
     int ret = -1;
 
+    ipc_xfer_t *h = (ipc_xfer_t *)p;
+
+    if(h->xfer_buf == NULL) {
+        err_printf("Invalid buffer");
+        goto err_done;
+    }
+
+    ret = mq_receive(h->mq, (char *)h->xfer_buf, h->xfer_len, NULL);
+
 err_done:
     return ret;
 

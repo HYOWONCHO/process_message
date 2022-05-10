@@ -20,6 +20,7 @@ CROSS_PREFIX ?=
 CROSS_CC := ${CROSS_PRFIX}${CROSS_ARCH}gcc
 USE_SAFECLIB ?= yes
 USE_CURL ?= yes
+USE_IPC ?= yes
 
 V=@
 

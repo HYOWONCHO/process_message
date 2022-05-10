@@ -21,7 +21,25 @@ typedef struct _t_ipc_com {
     struct mq_attr      attr;
     void         *priv;
     FUNC(int, send, (void *));
+    
+    /**
+     * recv - receive a message from a message queue
+     *
+     * @param priv
+     *
+     * @return  On success, return the number of byutes in the received message. 
+     *          On error, -1 is returned with
+     *
+     */ 
     FUNC(int, recv, (void *));
+
+    /**
+     * open - create a new POSIX message queue or opens an existing queue
+     *
+     * @param priv      
+     * @return  On success, returns a message queue descriptor. \n
+     *          On erroe, return -1, with errno set to indicate the error
+     */
     FUNC(int, open, (void *));
     FUNC(void, close, (void *));
 
