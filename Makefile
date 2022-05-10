@@ -48,6 +48,13 @@ ifeq ($(USE_CURL), yes)
 	DEFINES += -D__USED_CURL__ 
 endif
 
+ifeq ($(USE_IPC), yes) 
+	SRCS += ipc_com.c
+	LIBRARY += -lrt
+	DEFINES += -D__USED_IPC__
+
+endif
+
 
 # Use the intel safcelib 
 ifeq ($(USE_SAFECLIB), yes)

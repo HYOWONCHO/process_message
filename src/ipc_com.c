@@ -28,10 +28,10 @@ int ipc_com_create(void **p, void *buf, int mode)
 
     switch(mode) {
         case IPC_TYPE_SERVER:
-            h->mq_attr.mq_flags = O_WRONLY | O_CREAT;
+            h->attr.mq_flags = O_WRONLY | O_CREAT;
             break;
         case IPC_TYPE_CLIENT:
-            h->mq_attr.mq_flags = O_WRONLY;
+            h->attr.mq_flags = O_WRONLY;
             break;
         default:
             err_printf("Invalid MODE argument");
@@ -56,8 +56,9 @@ err_done:
     return ret;
 }
 
-static void ipc_com_close(void *p)
+static void ipc_com_close(void *_p)
 {
+    ipc_com_t *p = (ipc_com_t *)_p;
     if(p->mq) {
         mq_close(p->mq);
     }
@@ -71,7 +72,7 @@ static int ipc_com_open(void *p)
 {
     ipc_com_t *h = (ipc_com_t *)p;
 
-    h->mq = mq_open(IPC_COM_PATH, h->mq_attr.mq_flags); 
+    h->mq = mq_open(IPC_COM_PATH, h->attr.mq_flags); 
     if(h->mq == -1) {
         err_printf("Failed message queue open (%s)", strerror(errno));
         goto err_done;
@@ -81,7 +82,7 @@ static int ipc_com_open(void *p)
     ((ipc_xfer_t *)h->priv)->attr.mq_flags = h->attr.mq_flags;
     ((ipc_xfer_t *)h->priv)->attr.mq_maxmsg = h->attr.mq_maxmsg;
     ((ipc_xfer_t *)h->priv)->attr.mq_msgsize = h->attr.mq_msgsize;
-    ((ipc_xfer_t *)h->priv)->attr.mq_curmsg = h->attr.mq_curmsg;
+    ((ipc_xfer_t *)h->priv)->attr.mq_curmsgs = h->attr.mq_curmsgs;
 
     
     return 0L;
@@ -106,7 +107,7 @@ static int ipc_com_transmit(void *p)
     ipc_xfer_t *xfer = ((ipc_com_t *)p)->priv;
 
 
-    if( h == NULL ) {
+    if( xfer == NULL ) {
         err_printf("Invalid argument");
         goto err_done;
     }

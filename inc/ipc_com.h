@@ -18,7 +18,7 @@
 
 typedef struct _t_ipc_com {
     mqd_t        mq;
-    mq_attr      attr;
+    struct mq_attr      attr;
     void         *priv;
     FUNC(int, send, (void *));
     FUNC(int, recv, (void *));
@@ -30,7 +30,7 @@ typedef struct _t_ipc_com {
 
 typedef struct _t_ipc_xfer {
     mqd_t       mq;
-    mq_attr     attr;
+    struct mq_attr     attr;
     void        *xfer_buf;
     int         *xfer_len;
 }ipc_xfer_t;
