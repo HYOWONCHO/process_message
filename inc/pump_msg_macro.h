@@ -26,6 +26,19 @@ extern "C" {
 #endif
 
 
+#ifdef __compiler_offsetof
+#define     offsetof(TYPE,MEMBER) __compiler_offsetof(TYPE,MEMBER)
+#else
+#define     offsetof(TYPE,MEMBER) ((size_t)&((TYPE *)0)->MEMBER)
+#endif
+
+#define container_of(ptr, type, member)                 \
+    ({                                                  \
+        void *__mptr = (void *)(ptr);                   \
+        ((type *)(__mptr - offsetof(type, member)));    \
+    })
+
+
 #define MEM_RELEASE(x)                              \
     ({                                              \
         if(x != NULL) {                             \
@@ -39,6 +52,11 @@ extern "C" {
 
 
 #define SYS_ERROR_MSG()		strerror(errno)
+
+#define RETURN_VAL(_x)                          \
+    ({                                              \
+        return _x;                                  \
+    })
 
 
 //!< \def RETURN_IF_FAIL If given expression is fail, function is terminate and return.

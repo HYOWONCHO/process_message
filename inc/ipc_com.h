@@ -54,4 +54,5 @@ typedef struct _t_ipc_xfer {
 }ipc_xfer_t;
 
 
+int ipc_com_create(void **p, void *buf, int mode);
 
