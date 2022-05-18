@@ -20,6 +20,7 @@
 #pragma once
 
 #include "pump_debug.h"
+#include "safe_lib_errno.h"
 
 #ifdef __cplusplus
 extern "C" {
