@@ -31,7 +31,7 @@ INCLUDES := -I$(TARGET_ROOT)/inc
 LIBRARY :=
 
 # Default Macro define
-DEFINES := -D__DBG_ENABLE__
+DEFINES := -D__DBG_ENABLE__ -DDEBUG
 
 
 # Define Source 

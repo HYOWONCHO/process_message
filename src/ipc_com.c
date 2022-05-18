@@ -110,6 +110,32 @@ err_done:
 
 }
 
+int ipc_com_state(void *p)
+{
+    int ret = -1;
+
+    if( p == NULL ) {
+        err_printf("Invalid parameter");
+        goto err_done;
+    }
+
+    ret = mq_getattr(((ipc_com_t *)p)->mq, &((ipc_com_t *)p)->attr);
+    if( ret == -1 ) {
+        err_printf("Getting attribute (%s)", strerror(errno));
+        goto err_done;
+    }
+
+
+    ret = 0L;
+    return ret;
+
+
+
+err_done:
+    return ret;
+
+}
+
 static int ipc_com_transmit(void *p)
 {
     int ret = -1;
