@@ -4,6 +4,8 @@
 #include "file_mgm.h"
 #include "pump_debug.h"
 #include "pump_socket_common.h"
+#include "ipc_com.h"
+#include "file_mgm.h"
 
 #include "safe_mem_lib.h"
 
@@ -26,6 +28,7 @@ int main(int argc, char *argv[])
     list_mgm_test();
 #endif
 
+
 #if 0
     extern int record_stream_list(void **p, int size);
     record_file_t p;
@@ -43,7 +46,15 @@ int main(int argc, char *argv[])
     list_destroy(&p);
 #endif
 
-#if defined(__USED_CURL__)
+
+
+#if defined(_DO_TEST_IPCSVR_)
+    int test_ipcsvr_main(int argc, char **argv);
+
+    test_ipcsvr_main(argc, argv);
+#endif
+
+#if  0//defined(__USED_CURL__)
 #define APACHE_SVR_ADDR="http://192.168.0.9/"
 #define APACHE_SVR_DWNDIR="test/"
 #define APACHE_SVR_DWNNAME="changelog.md"
@@ -67,13 +78,54 @@ int main(int argc, char *argv[])
 #endif
 
 #if defined(_APP_CLIENT_)
-    char buff[100];
+    char *buff;
+    char *fname = "./readme_test.md";
 
     socket_class_t *s = NULL;
+    record_file_t rec;
+    file_io_t *fio;
 
+    debug_printf("APPLICATION CLINET START!!!");
+    debug_printf();
+    if(file_mgm_init(&rec) != EOK) {
+    debug_printf();
+        file_mgm_deinit(&rec);
+        exit(1);
+    }
+
+    debug_printf();
+    fio = rec.fio;
+
+    if(fio->open((void *)&rec, (const char *)fname) != EOK) {
+        file_mgm_deinit(&rec);
+        exit(1);
+    }
+
+    debug_printf();
+    buff = calloc(fio->fsize, sizeof *buff);
+
+    debug_printf();
+    if(fio->read(fio->f_idfy, buff, fio->fsize) < 0) {
+        file_mgm_deinit(&rec);
+        free(buff);
+        exit(1);
+    }
+
+
+
+    debug_printf();
+    __BUF_HEX_PRINT(buff, fname, fio->fsize);
+
+    fio->close(fio->f_idfy);
+
+    //file_mgm_deinit(&rec);
+    //free(buff);
+    
 
     debug_printf("APPLICATION CLINET !!!");
 
+
+#if 0
     //Instantiate a socket object
     s = init_socket(AF_INET, SOCK_STREAM);
 
@@ -97,6 +149,7 @@ int main(int argc, char *argv[])
         n_print("Received : %s\n", buff);
     }
     socket_close(s);
+#endif
 #endif
 
 

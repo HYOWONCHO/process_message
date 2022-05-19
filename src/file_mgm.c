@@ -300,3 +300,15 @@ int file_mgm_init(record_file_t *p)
     return EOK;
 
 }
+
+void file_mgm_deinit(record_file_t *p) {
+    if(p->list) {
+        free(p->list);
+        p->list=NULL;
+    }
+
+    if(p->fio) {
+        free(p->fio);
+        p->fio = NULL;
+    }
+}

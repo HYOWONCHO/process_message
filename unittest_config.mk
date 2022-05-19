@@ -42,9 +42,13 @@ endif
 
 
 ifeq ($(do_test_ipcsvr), yes)
+	vpath %.c $(TARGET_ROOT)/unittests/safestring
 	DEFINES += -D_DO_TEST_IPCSVR_
+	SRCS += test_ipc_svr.c
+	TARGET_BIN := $(TARGET_BIN)_ipcsvr
 endif
 
 ifeq ($(do_test_ipccli), yes)
 	DEFINES += -D_DO_TEST_IPCCLI_
+	TARGET_BIN := $(TARGET_BIN)_ipccli
 endif
