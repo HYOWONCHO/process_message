@@ -21,8 +21,8 @@ static int fio_open(void *priv, const char *path)
     file_io_t *p = NULL;
 
 
-    p = container_of(priv, file_io_t,  fio);
-
+    p = ptr_member_of_container(priv, record_file_t,  fio);
+    debug_printf("checking : %p , %p", p, (record_file_t *)priv->fio);
 
     if( p == NULL || path == NULL ) { 
         ret = ESNULLP;
@@ -53,6 +53,7 @@ static int fio_open(void *priv, const char *path)
 
     p->f_mode = O_RDONLY;
     p->f_idfy = open((const char *)p->f_name, p->f_mode);
+    p->fsize = p->statbuf.st_size;
     
 #else
 #error "Please, MUST select regards to Application running mode"
@@ -71,7 +72,72 @@ err_done:
     return ret;
 }
 
-static int fio_read(void *priv)
+static int fio_write(int fd, const char *buf, size_t wrsz)
+{
+    int ret = EOK; 
+    
+
+    if( buf == NULL) {
+        err_printf("Invalird parameter ");
+        ret = EFAIL;
+        errno = ESNULLP;
+        goto err_done;
+    }
+
+    ret =  write(fd, buf,  wrsz);
+    if(ret < 0) {
+        err_printf("Wrong write");
+        ret = EFAIL;
+        goto err_done;
+    }
+
+err_done:
+    RETURN_VAL(ret);
+
+
+}
+
+static int fio_read(int fd, char *buf, size_t rdsz)
+{
+    int ret = EOK; 
+    
+
+    if( buf == NULL) {
+        err_printf("Invalird parameter ");
+        ret = EFAIL;
+        errno = ESNULLP;
+        goto err_done;
+    }
+
+    ret =  read(fd, buf,  rdsz);
+    if(ret < 0) {
+        err_printf("Wrong read (%s)", SYS_ERROR_MSG());
+    }
+
+err_done:
+    RETURN_VAL(ret);
+
+}
+
+static void fio_close(int fd)
+{
+    close(fd);
+}
+
+statit int fio_seek(int fd, off_t offset, int whence) 
+{
+    int ret = EOK;
+
+    if((ret = lseek(fd,offset,whence)) < 0) {
+        ret = EFAIL;
+        err_printf("Failed file seeking (%s)", SYS_ERROR_MSG());
+        goto err_done;
+    }
+   
+err_done:
+    return ret; 
+
+}
 
 static int _is_image_file_format(char *path)
 {
@@ -213,7 +279,6 @@ void file_mgm_list_destory(void *priv)
 
 int file_mgm_init(record_file_t *p)
 {
-
     if(p->is_first == false) {
         memzero_s((void *)p, sizeof *p);
         p->list = (list_priv_t *)calloc(1, sizeof(record_file_t));
@@ -224,7 +289,20 @@ int file_mgm_init(record_file_t *p)
 
         list_initialize(p->list, file_mgm_list_destory);
         p->is_first = true;
+
+        p->fio = calloc(1,sizeof p->fio);
+        if(p->fio == NULL) {
+            err_printf("Not enough space (%s)",SYS_ERROR_MSG());
+            return EFAIL;
+        }
+
+        p->fio->open = fio_open;
+        p->fio->close = fio_close;
+        p->fio->write = fio_write;
+        p->fio->read = fio_read;
+        p->fio->seek = fio_seek;
+
     }
-    return 0;
+    return EOK;
 
 }

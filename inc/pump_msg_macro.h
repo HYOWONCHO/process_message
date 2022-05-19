@@ -44,7 +44,13 @@ extern "C" {
     (type *)( (char *)__mptr - offsetof(type,member) );})
 
 
-#define ptr_address_in_container(ptr, type, member) ({      \
+
+#define member_of_container(ptr, type, member) ({      \
+    const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+    (type *)( (char *)__mptr + offsetof(type,member) );})
+
+
+#define ptr_member_of_container(ptr, type, member) ({      \
     long _temp;                                             \
     const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
     (type *)*(long*)((type *)( (char *)__mptr + offsetof(type,member) ));           \

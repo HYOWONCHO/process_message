@@ -29,9 +29,10 @@
 /**< Length of the Record Name  */
 #define RECORD_NAME_LEN         (0xFF)
 
+
 typedef struct _t_file_io {
     char f_name[RECORD_NAME_LEN];
-    size_t f_len;
+    size_t fsize;
     int nw_mode;                /**< Network Mode ( 0 : Server , 1 : Client ) */
     int f_idfy;
     int f_mode;
@@ -39,6 +40,10 @@ typedef struct _t_file_io {
     struct stat statbuf;
 
     FUNC(int, open, (void, int));
+    FUNC(int, read, (int, char*, size_t));
+    FUNC(int, write, (int, char*, size_t));
+    FUNC(void, close, ());
+    FUNC(int, seek, (int,off_t,int));
 }file_io_t;
 
 typedef struct _t_record_file_h {

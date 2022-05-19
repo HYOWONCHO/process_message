@@ -97,4 +97,8 @@
 #define EOK             ( 0 )
 #endif
 
+#ifndef EFAIL
+#define EFAIL           (-1)
+#endif
+
 #endif /* __SAFE_LIB_ERRNO_H__ */
