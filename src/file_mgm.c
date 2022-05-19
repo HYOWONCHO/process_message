@@ -1,12 +1,6 @@
-#include <sys/stat.h>
 
-#include <sys/types.h>
-#include <dirent.h>
-#include <fcntl.h>
 
 #include "file_mgm.h"
-#include "pump_msg_macro.h"
-#include "safe_mem_lib.h"
 
 
 static const char const *prefix_table[] = {
@@ -21,8 +15,8 @@ static int fio_open(void *priv, const char *path)
     file_io_t *p = NULL;
 
 
-    p = ptr_member_of_container(priv, record_file_t,  fio);
-    debug_printf("checking : %p , %p", p, (record_file_t *)priv->fio);
+    p = (file_io_t *)ptr_member_of_container(priv, record_file_t,  fio);
+    debug_printf("checking : %p , %p", p, ((record_file_t *)priv)->fio);
 
     if( p == NULL || path == NULL ) { 
         ret = ESNULLP;
@@ -34,15 +28,15 @@ static int fio_open(void *priv, const char *path)
 
     strcpy_s(p->f_name, flen+1, path);
 
-    is_exit = access(p->f_name, F_OK);
-    if(is_exit != 0) {
+    is_exist = access(p->f_name, F_OK);
+    if(is_exist != 0) {
         info_printf("%s file is not exist on your system (%s)", p->f_name, SYS_ERROR_MSG());
     }
 
     // App running type check
 #if defined(_APP_SERVER_)
 
-    p->f_mode = O_CREATE | O_RDWR | O_DSYNC;
+    p->f_mode = O_CREAT | O_RDWR | O_DSYNC;
     p->f_idfy = open((const char *)p->f_name , p->f_mode, S_IRWXU);
 #elif defined(_APP_CLIENT_)
     if(stat((const char *)p->f_name, &p->statbuf) < 0) {
@@ -124,7 +118,7 @@ static void fio_close(int fd)
     close(fd);
 }
 
-statit int fio_seek(int fd, off_t offset, int whence) 
+static int fio_seek(int fd, off_t offset, int whence) 
 {
     int ret = EOK;
 

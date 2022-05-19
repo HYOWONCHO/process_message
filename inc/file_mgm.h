@@ -19,8 +19,15 @@
 
 #pragma once
 
+#include "pump_msg_macro.h"
 #include "list_manager.h"
 #include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include "safe_mem_lib.h"
 
 
 /**< Recorded Stream Path */
@@ -39,9 +46,9 @@ typedef struct _t_file_io {
     bool igonre;
     struct stat statbuf;
 
-    FUNC(int, open, (void, int));
+    FUNC(int, open, (void*, const char*));
     FUNC(int, read, (int, char*, size_t));
-    FUNC(int, write, (int, char*, size_t));
+    FUNC(int, write, (int, const char*, size_t));
     FUNC(void, close, ());
     FUNC(int, seek, (int,off_t,int));
 }file_io_t;
