@@ -18,13 +18,17 @@ static int fio_open(void *priv, const char *path)
     int ret = EFAIL;
     int is_exist = 0;
     size_t flen = 0;
-    file_io_t *p = (file_io_t *)priv;
+    file_io_t *p = NULL;
 
 
-    if(p == NULL || path == NULL ) { 
+    p = container_of(priv, file_io_t,  fio);
+
+
+    if( p == NULL || path == NULL ) { 
         ret = ESNULLP;
         goto err_done;
     }
+
 
     flen = strnlen_s((const char *)path, RECORD_NAME_LEN);
 
@@ -66,6 +70,8 @@ err_done:
 
     return ret;
 }
+
+static int fio_read(void *priv)
 
 static int _is_image_file_format(char *path)
 {
