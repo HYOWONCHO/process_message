@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sys/select.h>
 
 #include "pump_socket_common.h"
 #include "pump_msg_macro.h"
@@ -67,9 +68,9 @@ static socket_class_t *_accept_(socket_class_t *s, client_addr_t *c)
 }
 
 
-static int _send_(socket_class_t *s, const char *str)
+static int _send_(socket_class_t *s, const char *str, int max_len)
 {
-    return send(s->_sockfd, str, strlen(str), 0);
+    return send(s->_sockfd, str, max_len, 0);
 }
 
 
@@ -119,6 +120,43 @@ static void _create_(socket_class_t *s, int type, const char *ip_addr, int port)
 
 }
 
+static int _read_select_(struct socket_class_t *s, int sec)
+{
+    int ret = EOK;
+    socket_select_t *handle = NULL;
+
+    handle = (socket_select_t *)ptr_member_of_container(s, socket_class_t, fd_select);
+
+    FD_ZERO(&handle->fds);
+    FD_SET(s->_sockfd + 1, &handle->fds);
+
+    handle->tv.tv_sec = sec;
+    handle->tv.tv_usec = 0;
+
+    ret = select(s->_sockfd + 1, &handle->fds, NULL, NULL, &handle->tv);
+
+    switch(ret) {
+        case -1:
+            err_printf("select failed (%s)", SYS_ERROR_MSG());
+            RETURN_VAL(ret);
+        case 0:
+            debug_printf("NO data within %d seconds.", handle->tv.tv_sec);
+            RETURN_VAL(ret);
+        default:
+            break;
+    }
+
+    if(!FD_ISSET(s->_sockfd, &handle->fds)) {
+        info_printf("%s", SYS_ERROR_MSG());
+        return EFAIL;
+    }
+
+
+    debug_printf("Data is available now.");
+
+    return EFAIL;
+}
+
 static void _exit_error_(socket_class_t *s, const char *msg)
 {
     socket_close(s);
@@ -150,6 +188,9 @@ static char *_inet_ntop_(socket_class_t *s, struct sockaddr *sa)
 
     return str;
 }
+
+
+
 
 socket_class_t *init_socket(int family, int type)
 {

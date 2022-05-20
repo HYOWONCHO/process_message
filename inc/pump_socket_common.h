@@ -20,6 +20,11 @@ typedef struct _t_clientaddr {
     int port;                   /**< Connected port number */
 }client_addr_t;
 
+typedef struct socket_select_t {
+    struct timeval tv;
+    fd_set fds;
+}socket_select_t;
+
 
 typedef struct socket_class_t {
     /**
@@ -39,9 +44,11 @@ typedef struct socket_class_t {
 
     FUNC(struct socket_class_t* ,accept,(struct socket_class_t*, client_addr_t*));
 
-    FUNC(int, send, (struct socket_class_t*, const char *));
+    FUNC(int, send, (struct socket_class_t*, const char *, int));
 
     FUNC(int, recv, (struct socket_class_t*, char *, int));
+
+    FUNC(int, select, (struct socket_class_t*, int));
 
 
     int _sockfd;
@@ -50,6 +57,7 @@ typedef struct socket_class_t {
     int _proto;
     struct addrinfo _addrinfo_hints;
     struct addrinfo*_addrinfo;
+    socket_select_t fd_select;
 
     FUNC(void, _create, (struct socket_class_t *, int, const char *, int));
 

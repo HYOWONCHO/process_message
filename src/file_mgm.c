@@ -87,8 +87,6 @@ static int fio_write(int fd, const char *buf, size_t wrsz)
 
 err_done:
     RETURN_VAL(ret);
-
-
 }
 
 static int fio_read(int fd, char *buf, size_t rdsz)

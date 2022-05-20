@@ -77,6 +77,9 @@ int main(int argc, char *argv[])
     }
 #endif
 
+#if defined(__FILE_IO_TEST__)
+#endif
+
 #if defined(_APP_CLIENT_)
     char *buff;
     char *fname = "./readme_test.md";
@@ -86,14 +89,11 @@ int main(int argc, char *argv[])
     file_io_t *fio;
 
     debug_printf("APPLICATION CLINET START!!!");
-    debug_printf();
     if(file_mgm_init(&rec) != EOK) {
-    debug_printf();
         file_mgm_deinit(&rec);
         exit(1);
     }
 
-    debug_printf();
     fio = rec.fio;
 
     if(fio->open((void *)&rec, (const char *)fname) != EOK) {
@@ -101,10 +101,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    debug_printf();
     buff = calloc(fio->fsize, sizeof *buff);
 
-    debug_printf();
     if(fio->read(fio->f_idfy, buff, fio->fsize) < 0) {
         file_mgm_deinit(&rec);
         free(buff);
@@ -113,8 +111,8 @@ int main(int argc, char *argv[])
 
 
 
-    debug_printf();
-    __BUF_HEX_PRINT(buff, fname, fio->fsize);
+
+    //__BUF_HEX_PRINT(buff, fname, fio->fsize);
 
     fio->close(fio->f_idfy);
 
@@ -125,37 +123,49 @@ int main(int argc, char *argv[])
     debug_printf("APPLICATION CLINET !!!");
 
 
-#if 0
+#if 1
     //Instantiate a socket object
     s = init_socket(AF_INET, SOCK_STREAM);
 
     //Connect to sever
     s->connect(s,(const char *)CONNECT_IP_ADDR, CONNECT_IP_PORT); 
-    while(1) {
-        memzero_s(buff, sizeof buff);
-        n_print(">> ");
-
-        // wait the user input
-        if(fgets(buff, sizeof(buff), stdin) == NULL) {
-            perror("fgets error");
-            break;
-        }
-
-        s->send(s, buff);
-
-
-        s->recv(s,buff, sizeof(buff));
-
-        n_print("Received : %s\n", buff);
+    //while(1) {
+    char *okbuf[64] = {0, };
+#if 0
+    memzero_s(buff, sizeof buff);
+    n_print(">> ");
+    // wait the user input
+    if(fgets(buff, sizeof(buff), stdin) == NULL) {
+        perror("fgets error");
+        break;
     }
+#endif
+
+    __BUF_HEX_PRINT(buff, "Sending", fio->fsize);
+
+
+    s->send(s, buff, fio->fsize);
+
+    //s->recv(s,buff, sizeof(buff));
+
+    //n_print("Received : %s\n", buff);
+
+    //if(buff[0] == 'o' && buff[1] == 'k') {
+    //    s->send(s, (const char *)"ok", 2);
+    //}
+    //}
     socket_close(s);
 #endif
 #endif
 
 
 #if defined(_APP_SERVER_)
-    char buff[100];
+    char *fname = "./readme_test_svr.md";
+    char buff[1093];
     int bytes;
+
+    record_file_t rec;
+    file_io_t *fio;
 
     debug_printf("APPLICATION SERVER !!!");
     socket_class_t *s = init_socket(AF_INET, SOCK_STREAM);
@@ -172,20 +182,38 @@ int main(int argc, char *argv[])
     //client_addr.port = 12345;
 
 
-    while(1) {
-        memzero_s((void *)buff, sizeof(buff));
-        c->recv(c, buff, sizeof(buff));
+    //while(1) {
+    memzero_s((void *)buff, sizeof(buff));
+    c->recv(c, buff, sizeof(buff));
 
+    __BUF_HEX_PRINT(buff, "receive data", sizeof buff);
 
-        debug_printf("recv buffer : %s", buff);
-        if(strlen(buff) == 0) {
-            break;
-        }
-
-        n_print("Got: %s \n", buff);
-        c->send(c, buff);
-        n_print("Sending : %s \n", buff);
+    if(file_mgm_init(&rec) != EOK) {
+        file_mgm_deinit(&rec);
+        exit(1);
     }
+
+    fio = rec.fio;
+
+    if(fio->open((void *)&rec, (const char *)fname) != EOK) {
+        file_mgm_deinit(&rec);
+        exit(1);
+    }
+
+    fio->write(fio->f_idfy, buff, sizeof(buff));
+
+    fio->close(fio->f_idfy);
+
+
+       // debug_printf("recv buffer : %s", buff);
+       // if(strlen(buff) == 0) {
+       //     break;
+       // }
+
+        // n_print("Got: %s \n", buff);
+        //c->send(c, (const char *)"ok",2);
+        //n_print("Sending : %s \n", buff);
+    //}
 
     socket_close(c);
     socket_close(s);
