@@ -3,16 +3,21 @@
 
 #include <pthread.h>
 
+#define THREAD_MAX_CNT          5
+
+typedef void *(*pthread_start)(void *);
+
 typedef struct pthread_mgm_t {
-    pthread_t pid[5];
+    int idx;
+    pthread_t pid[THREAD_MAX_CNT];
+    pthread_start start[THREAD_MAX_CNT]; 
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     pthread_condattr_t attr;
-    int flag;
 }pthread_mgm_t;
 
 
-#define PTHREAD_MGM_INIT()                                           \
+#define THREAD_MGM_INIT(func)                                        \
     ({                                                               \
         pthread_mgm_t *t;                                            \
         t = calloc(1, sizeof *t);                                    \
@@ -24,8 +29,7 @@ typedef struct pthread_mgm_t {
     })
 
 
-
-#define PTHREAD_MGM_DEINIT(x)                                       \
+#define THREAD_MGM_DEINIT(x)                                        \
     ({                                                              \
         pthread_mgm_t *_t = (pthread_mgm_t *)x;                     \
         pthread_mutex_destroy(&_t->mutex);                          \
@@ -34,6 +38,37 @@ typedef struct pthread_mgm_t {
         free(x);                                                    \
     })
 
+#define THREAD_CREATE(tid,attr,func,arg)                            \
+    ({                                                              \
+        pthread_create((pthread_t *)tid, (pthread_attr_t *)attr,    \
+                (pthread_start)func, (void *)arg);                  \
+    })
+
+/**
+ * THREAD_JOIN - Wait for a thread to end
+ *
+ * @param[in] tid - Thread handle
+ * @param[out] retval - If retval is not NULL, Thread exit status of the target thread
+ *
+ * @return On success, return 0, otherwise, returns an error number
+ */
+#define THREAD_JOIN(tid,retval)                                     \
+    ({                                                              \
+        pthread_join((pthread_t)tid, (void **)retval);              \
+    })
+
+
+/**
+ * THREAD_DETACH - Detach a thread
+ *
+ * @param[in] tid - Thread ID
+ *
+ * @return On success, return 0, othrewise, return -1
+ */
+#define THREAD_DETACH(tid)                                          \
+    ({                                                              \
+        pthread_detach((pthread_t *)tid);                           \
+    })
 
 #define MUTEX_LOCK(x)                                               \
     ({                                                              \
@@ -67,5 +102,4 @@ typedef struct pthread_mgm_t {
     ({                                                              \
         pthread_cond_broadcast(&(pthread_mgm_t *x)->cond);          \
     })
-
 
