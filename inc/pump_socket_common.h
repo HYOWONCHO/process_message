@@ -3,7 +3,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <pthread.h>
+
 #include "pump_msg_macro.h"
+
 
 typedef enum _t_socket_type {
     INET_SOCKET_SERVER      = 1,
@@ -64,6 +67,10 @@ typedef struct socket_class_t {
     FUNC(void, _exit_error, (struct socket_class_t *, const char *));
 
     FUNC(char *, _inet_ntop, (struct socket_class_t *, struct sockaddr *));
+
+
+    pthread_mutex_t mutex;
+    pthread_cond_t  cond;
 }socket_class_t;
 
 
