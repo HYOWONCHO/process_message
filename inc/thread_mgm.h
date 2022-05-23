@@ -2,10 +2,24 @@
 
 
 #include <pthread.h>
+#include "list_manager.h"
 
 #define THREAD_MAX_CNT          5
 
 typedef void *(*pthread_start)(void *);
+
+typedef struct ai2file_sync_t {
+    thread_mgm_t ai2f;
+
+
+}ai2file_sync_t;
+
+typedef struct io2net_sync_t {
+    thread_mgm_t io2net;
+    list_element_t *flist;    // File element list
+
+
+}io2net_sync_t;
 
 typedef struct thread_mgm_t {
     int idx;
@@ -14,6 +28,8 @@ typedef struct thread_mgm_t {
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     pthread_condattr_t attr;
+
+    list_element_t *s;
 }thread_mgm_t;
 
 

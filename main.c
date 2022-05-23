@@ -28,21 +28,24 @@ int main(int argc, char *argv[])
     void *xfer_start(void *priv);
     void *capture_start(void *priv);
 
-    thread_mgm_t *h = NULL;
+    thread_mgm_t *sending = NULL;
+    thread_mgm_t *stream = NULL;
 
-    h = THREAD_MGM_INIT();
+    sending = THREAD_MGM_INIT();
+    stream = THREAD_MGM_INIT();
 
-    if(h == NULL) {
-        err_printf("%s", SYS_ERROR_MSG());
+    if(sending == NULL || stream == NULL) {
+        err_printf("sending%p , stream : %p - %s", 
+                    sending, stream, SYS_ERROR_MSG());
         return -1;
     }
 
-    h->start[0] = capture_start;
-    h->start[1] = xfer_start;
+    sending->start[0] = capture_start;
+    sending->start[1] = xfer_start;
 
 
     for(int i = 0; i < 2; i ++) {
-        if(THREAD_CREATE(&h->tid[i], NULL, h->start[i], (void *)h) < 0)  {
+        if(THREAD_CREATE(&sending->tid[i], NULL, sending->start[i], (void *)h) < 0)  {
             err_printf("thread create fail: (%s)",  SYS_ERROR_MSG());
             return -1;
         }
@@ -50,7 +53,7 @@ int main(int argc, char *argv[])
         THREAD_DETACH(h->tid[i]);
     }
 
-    sleep(5);
+    sleep(3);
 
     THREAD_MGM_DEINIT(h);
 
