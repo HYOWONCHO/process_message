@@ -2,10 +2,11 @@
 #include <stdlib.h>
 
 #include "file_mgm.h"
-#include "pump_debug.h"
+#include "pump_msg_macro.h"
 #include "pump_socket_common.h"
 #include "ipc_com.h"
 #include "file_mgm.h"
+#include "thread_mgm.h"
 
 #include "safe_mem_lib.h"
 
@@ -18,8 +19,46 @@
 #define CONNECT_IP_PORT     12345
 
 
+
+
+
 int main(int argc, char *argv[])
 {
+
+    void *xfer_start(void *priv);
+    void *capture_start(void *priv);
+
+    thread_mgm_t *h = NULL;
+
+    h = THREAD_MGM_INIT();
+
+    if(h == NULL) {
+        err_printf("%s", SYS_ERROR_MSG());
+        return -1;
+    }
+
+    h->start[0] = capture_start;
+    h->start[1] = xfer_start;
+
+
+    for(int i = 0; i < 2; i ++) {
+        if(THREAD_CREATE(&h->tid[i], NULL, h->start[i], (void *)h) < 0)  {
+            err_printf("thread create fail: (%s)",  SYS_ERROR_MSG());
+            return -1;
+        }
+
+        THREAD_DETACH(h->tid[i]);
+    }
+
+    sleep(5);
+
+    THREAD_MGM_DEINIT(h);
+
+    return 0;
+
+#if 0
+
+
 #ifdef _DO_TEST_MEMCMP_x
     extern int test_memcmp32_s(void);
     test_memcmp32_s();
@@ -221,4 +260,5 @@ int main(int argc, char *argv[])
 
     
     return 1;
+#endif
 }

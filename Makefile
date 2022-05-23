@@ -28,7 +28,7 @@ vpath %.c $(TARGET_ROOT)/src
 # Defafult Header Path
 INCLUDES := -I$(TARGET_ROOT)/inc
 
-LIBRARY :=
+LIBRARY := -lpthread
 
 # Default Macro define
 DEFINES := -D__DBG_ENABLE__ -DDEBUG
@@ -38,6 +38,7 @@ DEFINES := -D__DBG_ENABLE__ -DDEBUG
 SRCS := main.c 						\
 		file_mgm.c list_manager.c 	\
 		pump_socket_common.c 		\
+		capture_thread.c xfer_thread.c
 
 
 ifeq ($(USE_CURL), yes)

@@ -226,8 +226,8 @@ socket_class_t *init_socket(int family, int type)
 
 
     //pthread_mutex_init(&s->lock)
-    s->mutex = PTHREAD_MUTEX_INITIALIZER;
-    s->cond = PTHREAD_COND_INITIALIZER;
+    s->mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    s->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
 
     return s;
 }

@@ -7,21 +7,21 @@
 
 typedef void *(*pthread_start)(void *);
 
-typedef struct pthread_mgm_t {
+typedef struct thread_mgm_t {
     int idx;
-    pthread_t pid[THREAD_MAX_CNT];
+    pthread_t tid[THREAD_MAX_CNT];
     pthread_start start[THREAD_MAX_CNT]; 
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     pthread_condattr_t attr;
-}pthread_mgm_t;
+}thread_mgm_t;
 
 
-#define THREAD_MGM_INIT(func)                                        \
+#define THREAD_MGM_INIT()                                            \
     ({                                                               \
-        pthread_mgm_t *t;                                            \
+        thread_mgm_t *t;                                             \
         t = calloc(1, sizeof *t);                                    \
-        memset((void *)t->pid, 0x0, sizeof t->pid);                  \
+        memset((void *)t->tid, 0x0, sizeof t->tid);                  \
         t->mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;       \
         t->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;          \
         pthread_condattr_init(&t->attr);                             \
@@ -31,7 +31,7 @@ typedef struct pthread_mgm_t {
 
 #define THREAD_MGM_DEINIT(x)                                        \
     ({                                                              \
-        pthread_mgm_t *_t = (pthread_mgm_t *)x;                     \
+        thread_mgm_t *_t = (thread_mgm_t *)x;                       \
         pthread_mutex_destroy(&_t->mutex);                          \
         pthread_condattr_destroy(&_t->attr);                        \
         pthread_cond_destroy(&_t->cond);                            \
@@ -72,34 +72,34 @@ typedef struct pthread_mgm_t {
 
 #define MUTEX_LOCK(x)                                               \
     ({                                                              \
-        pthread_mutex_lock(&(((pthread_mgm_t *)x)->mutex));         \
+        pthread_mutex_lock(&(((thread_mgm_t *)x)->mutex));         \
     })
 
 #define MUTEX_UNLOCK(x)                                             \
     ({                                                              \
-        pthread_mutex_unlock(&(((pthread_mgm_t *)x)->mutex));       \
+        pthread_mutex_unlock(&(((thread_mgm_t *)x)->mutex));       \
     })
 
 #define COND_SIGNAL(x)                                              \
     ({                                                              \
-        pthread_cond_signal(&((pthread_mgm_t *)x)->cond);           \
+        pthread_cond_signal(&((thread_mgm_t *)x)->cond);           \
     })
 
 #define COND_SIGNAL_WITH_ATTR(x)                                    \
     ({                                                              \
-        pthread_cond_signal(&((pthread_mgm_t *)x)->cond,            \
-                &((pthread_mgm_t *)x)->attr);                       \
+        pthread_cond_signal(&((thread_mgm_t *)x)->cond,            \
+                &((thread_mgm_t *)x)->attr);                       \
     })
 
 #define COND_WAIT(x)                                                \
     ({                                                              \
-        pthread_cond_wait(&((pthread_mgm_t *)x)->cond,              \
-                        &((pthread_mgm_t *)x)->mutex);              \
+        pthread_cond_wait(&((thread_mgm_t *)x)->cond,              \
+                        &((thread_mgm_t *)x)->mutex);              \
     })
 
 
 #define COND_BROADCAST(x)                                           \
     ({                                                              \
-        pthread_cond_broadcast(&(pthread_mgm_t *x)->cond);          \
+        pthread_cond_broadcast(&(thread_mgm_t *x)->cond);          \
     })
 
