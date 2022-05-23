@@ -67,7 +67,7 @@ typedef struct thread_mgm_t {
  */
 #define THREAD_DETACH(tid)                                          \
     ({                                                              \
-        pthread_detach((pthread_t *)tid);                           \
+        pthread_detach((pthread_t)tid);                             \
     })
 
 #define MUTEX_LOCK(x)                                               \
