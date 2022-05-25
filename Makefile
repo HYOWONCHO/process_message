@@ -32,6 +32,7 @@ LIBRARY := -lpthread
 
 # Default Macro define
 DEFINES := -D__DBG_ENABLE__ -DDEBUG
+DEFINES += -DSIMPLE_INTERACT
 
 
 # Define Source 

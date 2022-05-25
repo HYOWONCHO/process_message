@@ -8,6 +8,18 @@
 
 typedef void *(*pthread_start)(void *);
 
+typedef struct thread_mgm_t {
+    int idx;
+    pthread_t tid[THREAD_MAX_CNT];
+    pthread_start start[THREAD_MAX_CNT]; 
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    pthread_condattr_t attr;
+
+    list_element_t *s;
+}thread_mgm_t;
+
+
 typedef struct ai2file_sync_t {
     thread_mgm_t ai2f;
 
@@ -20,18 +32,6 @@ typedef struct io2net_sync_t {
 
 
 }io2net_sync_t;
-
-typedef struct thread_mgm_t {
-    int idx;
-    pthread_t tid[THREAD_MAX_CNT];
-    pthread_start start[THREAD_MAX_CNT]; 
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-    pthread_condattr_t attr;
-
-    list_element_t *s;
-}thread_mgm_t;
-
 
 #define THREAD_MGM_INIT()                                            \
     ({                                                               \

@@ -19,9 +19,6 @@
 #define CONNECT_IP_PORT     12345
 
 
-
-
-
 int main(int argc, char *argv[])
 {
 
@@ -45,17 +42,17 @@ int main(int argc, char *argv[])
 
 
     for(int i = 0; i < 2; i ++) {
-        if(THREAD_CREATE(&sending->tid[i], NULL, sending->start[i], (void *)h) < 0)  {
+        if(THREAD_CREATE(&sending->tid[i], NULL, sending->start[i], (void *)sending) < 0)  {
             err_printf("thread create fail: (%s)",  SYS_ERROR_MSG());
             return -1;
         }
 
-        THREAD_DETACH(h->tid[i]);
+        THREAD_DETACH(sending->tid[i]);
     }
 
     sleep(3);
 
-    THREAD_MGM_DEINIT(h);
+    THREAD_MGM_DEINIT(sending);
 
     return 0;
 

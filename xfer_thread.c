@@ -19,6 +19,7 @@ struct xfer_handle_t {
 };
 
 struct xfer_packet_t {
+#if 0
     union {
         struct {
             uint8_t continuity_bit:4;               // 1: continues , 0: no more
@@ -26,27 +27,32 @@ struct xfer_packet_t {
         }as_fields;
         uint8_t continuity;
     }cond;
-#ifdef SIMPLE_INTERACT
+#endif
     uint32_t sz_payload;
     uint8_t *body;
-#endif
 };
 
 static void *packet_aligin_and_padding(uint8_t *pkt)
 {
-    xfer_packet_t *p = NULL;
-    p = container_of(pkt, xfer_packt_t, body);
+    struct xfer_packet_t *p = NULL;
+    p = container_of(pkt, struct xfer_packet_t, body);
+
+    return NULL;
 }
 
 #if defined(SIMPLE_INTERACT)
-static struct xfer_packet_t *xfer_create_recording_list_packet(xfer_handle_t *h)
+//static struct xfer_packet_t *xfer_create_recording_list_packet(xfer_handle_t *h)
+struct xfer_packet_t *xfer_create_recording_list_packet(struct xfer_handle_t *h)
 {
+    uint32_t start_prefix = XFER_START_PREFIX;
+    uint32_t end_prefix = XFER_END_PREFIX;
     int sz_pkt = 0L;
     uint8_t *dest = NULL;
     int sz_wwwlist = 0L;
     list_element_t *wwwlist = NULL;
     struct xfer_packet_t *pkt = NULL;;
-    if( f == NULL ) {
+    if( h == NULL ) {
+        err_printf("Invalid parameter");
         return NULL;
     }
 
@@ -56,45 +62,69 @@ static struct xfer_packet_t *xfer_create_recording_list_packet(xfer_handle_t *h)
         return NULL;
     }
 
-    pkt->body = calloc(1, sizeof int);
+    debug_printf();
+
+    pkt->body = calloc(1, sizeof(int));
+    debug_printf();
     dest = pkt->body;
-    memcpy_s((void *)dest, sizeof int, (const void *)&XFER_START_PREFIX, sizeof int);
+    memcpy_s((void *)dest, sizeof(int), (const void *)&start_prefix, sizeof(int));
 
     wwwlist = list_head(h->tm->s);
     sz_wwwlist = list_get_size(h->tm->s);
 
-    // 0xFF : Record file name max length, 0x04 : END PREFIX
-    pkt->body = realloc(pkt->body, (sz_wwwlist * 0xFF) + 4);
     sz_pkt = 4;
+    __BUF_HEX_PRINT(pkt->body, "start packet", sz_pkt);
+    // 0xFF : Record file name max length, 0x04 : END PREFIX
+    //pkt->body = realloc(pkt->body, (sz_wwwlist * 0xFF) +  sz_pkt);
     dest += sz_pkt;
     
+#if 0
+    for(int i = 0; i < sz_wwwlist; i++) {
+        int cpylen =  0L;
+        memzero_s(dest, 0xFF);    
+        cpylen = strnlen_s(wwwlist->data, 0xFF);
+        memcpy_s((void *)dest, 0xFF, (const void *)wwwlist->data, cpylen);
+        wwwlist = list_next(wwwlist);
+        dest[cpylen] = '\0';
+        dest += 0xFF;
+        sz_pkt += 0xFF;
+    }
+#endif
 
     for(int i = 0; i < sz_wwwlist; i++) {
         int cpylen =  0L;
-        memzeros_s(dest, 0xFF);    
         cpylen = strnlen_s(wwwlist->data, 0xFF);
-        memcpy_s((void *)dest, 0xFF, (const void *)wwwlist->data, cpylen);
+        sz_pkt += cpylen + 1;
+        pkt->body = realloc(pkt->body, sz_pkt);
+        memzero_s(dest, cpylen);    
+        memcpy_s((void *)dest, cpylen, (const void *)wwwlist->data, cpylen);
+        wwwlist = list_next(wwwlist);
         dest[cpylen] = '\0';
-        dest += 0xFF;
-        dest->sz_pkt += 0xFF;
+        dest += cpylen+1;
+        //sz_pkt += cpylen+1; 
     }
 
-    memcpy_s((void *)dest, (const void *)&XFER_END_PREFIX, 0xFF);
-    dest->sz_pkt += 4;
+    __BUF_HEX_PRINT(pkt->body, "list packet", sz_pkt);
 
 
+    sz_pkt += 4;
+    pkt->body = realloc(pkt->body, sz_pkt);
+    memcpy_s((void *)dest, 4, (const void *)&end_prefix, 4);
+    dest += 4;
 
+    if( ((sz_pkt % 64) != 0) &&  (sz_pkt != 0)) {
+        pkt->body = realloc(pkt->body, (64 - (sz_pkt % 64)) + sz_pkt);
+        memzero_s(dest, 64 - (sz_pkt % 64));
+        sz_pkt += (64 - (sz_pkt % 64));
+    }
 
+    __BUF_HEX_PRINT(pkt->body, "sending packet", sz_pkt);
 
 err_done:
     MEM_RELEASE(pkt);
     return NULL;
-
-
-
 }
 
-static int xfer_send_header()
 #endif
 
 static void _print_recording_list(list_element_t *l)
@@ -129,9 +159,9 @@ void *xfer_start(void *priv)
 
     //printf("handle address: %p", handle);
 
-    if(xfer_interact_init(xfer->sck) != EOK) {
-        return NULL;
-    }
+    //if(xfer_interact_init(xfer->sck) != EOK) {
+    //   return NULL;
+    //}
 
     debug_printf("wait capture thread wait ~~~");
     COND_WAIT(xfer->tm);
@@ -143,6 +173,7 @@ void *xfer_start(void *priv)
 
 
     // TO DO: Send the recording list to the Host
+    xfer_create_recording_list_packet(xfer);
     
      
 
