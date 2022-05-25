@@ -13,10 +13,13 @@
 #define XFER_START_PREFIX           0x53855073
 #define XFER_END_PREFIX             0x83558049
 
-struct xfer_handle_t {
-    socket_class_t *sck;
-    thread_mgm_t *tm;
-};
+
+#define XFER_PACKET_BLKSZ           0x40
+
+
+#define XFER_PADDING_MOD(s)         (s % XFER_PACKET_BLKSZ)
+
+#define XFER_PADDING_CAL(s)         (XFER_PACKET_BLKSZ - XFER_PADDING_MOD(s))
 
 struct xfer_packet_t {
 #if 0
@@ -30,6 +33,14 @@ struct xfer_packet_t {
 #endif
     uint32_t sz_payload;
     uint8_t *body;
+};
+
+
+struct xfer_handle_t {
+    struct xfer_packet_t *pkt;
+    socket_class_t *sck;
+    thread_mgm_t *tm;
+    
 };
 
 static void *packet_aligin_and_padding(uint8_t *pkt)
@@ -51,6 +62,7 @@ struct xfer_packet_t *xfer_create_recording_list_packet(struct xfer_handle_t *h)
     int sz_wwwlist = 0L;
     list_element_t *wwwlist = NULL;
     struct xfer_packet_t *pkt = NULL;;
+
     if( h == NULL ) {
         err_printf("Invalid parameter");
         return NULL;
@@ -62,10 +74,8 @@ struct xfer_packet_t *xfer_create_recording_list_packet(struct xfer_handle_t *h)
         return NULL;
     }
 
-    debug_printf();
 
     pkt->body = calloc(1, sizeof(int));
-    debug_printf();
     dest = pkt->body;
     memcpy_s((void *)dest, sizeof(int), (const void *)&start_prefix, sizeof(int));
 
@@ -112,16 +122,19 @@ struct xfer_packet_t *xfer_create_recording_list_packet(struct xfer_handle_t *h)
     memcpy_s((void *)dest, 4, (const void *)&end_prefix, 4);
     dest += 4;
 
-    if( ((sz_pkt % 64) != 0) &&  (sz_pkt != 0)) {
-        pkt->body = realloc(pkt->body, (64 - (sz_pkt % 64)) + sz_pkt);
-        memzero_s(dest, 64 - (sz_pkt % 64));
-        sz_pkt += (64 - (sz_pkt % 64));
+    if( (XFER_PADDING_MOD(sz_pkt) != 0) &&  (sz_pkt != 0)) {
+        int remind_padding = XFER_PADDING_CAL(sz_pkt);
+        pkt->body = realloc(pkt->body, remind_padding + sz_pkt);
+        memzero_s(dest, remind_padding);
+        sz_pkt += remind_padding;
     }
 
-    __BUF_HEX_PRINT(pkt->body, "sending packet", sz_pkt);
+    h->pkt = pkt;
+    h->pkt->sz_payload = sz_pkt;
+
 
 err_done:
-    MEM_RELEASE(pkt);
+    //MEM_RELEASE(pkt);
     return NULL;
 }
 
@@ -174,9 +187,11 @@ void *xfer_start(void *priv)
 
     // TO DO: Send the recording list to the Host
     xfer_create_recording_list_packet(xfer);
+    __BUF_HEX_PRINT(xfer->pkt->body, "sending packet", xfer->pkt->sz_payload);
     
      
 
+    MEM_RELEASE(xfer->pkt);
     return NULL;
 
 }
