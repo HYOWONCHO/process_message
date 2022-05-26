@@ -30,11 +30,13 @@ endif
 
 ifeq ($(do_test_server), yes)
 	DEFINES+=-D_APP_SERVER_
+	SRCS += svr_thread.c 
 	TARGET_BIN := $(TARGET_BIN)_server
 endif
 
 ifeq ($(do_test_client), yes)
 	DEFINES+=-D_APP_CLIENT_
+	SRCS += capture_thread.c xfer_thread.c
 	TARGET_BIN := $(TARGET_BIN)_client
 endif
 

@@ -19,7 +19,6 @@
 # Include 
 include ./config.mk
 
-
 # Default Source Path 
 vpath %.c $(TARGET_ROOT)
 vpath %.c $(TARGET_ROOT)/src
@@ -36,10 +35,9 @@ DEFINES += -DSIMPLE_INTERACT
 
 
 # Define Source 
-SRCS := main.c 						\
+SRCS := 	\
 		file_mgm.c list_manager.c 	\
-		pump_socket_common.c 		\
-		capture_thread.c xfer_thread.c
+		pump_socket_common.c 		
 
 
 ifeq ($(USE_CURL), yes)
@@ -56,7 +54,14 @@ ifeq ($(USE_IPC), yes)
 endif
 
 
+
 include ./unittest_config.mk
+
+ifeq ($(do_test_server), yes)
+SRCS += svr_main.c 						
+else
+SRCS += main.c 						
+endif
 
 
 
