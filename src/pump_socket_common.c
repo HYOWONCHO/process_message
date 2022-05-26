@@ -122,7 +122,9 @@ static void _create_(socket_class_t *s, int type, const char *ip_addr, int port)
 
 static int _read_select_(struct socket_class_t *s, int sec)
 {
+#if 0
     int ret = EOK;
+
     socket_select_t *handle = NULL;
 
     handle = (socket_select_t *)ptr_member_of_container(s, socket_class_t, fd_select);
@@ -133,7 +135,13 @@ static int _read_select_(struct socket_class_t *s, int sec)
     handle->tv.tv_sec = sec;
     handle->tv.tv_usec = 0;
 
-    ret = select(s->_sockfd + 1, &handle->fds, NULL, NULL, &handle->tv);
+
+    if(sec == 0) {
+        ret = select(s->_sockfd + 1, &handle->fds, NULL, NULL, NULL);
+    }
+    else
+        ret = select(s->_sockfd + 1, &handle->fds, NULL, NULL, &handle->tv);
+    }
 
     switch(ret) {
         case -1:
@@ -141,7 +149,7 @@ static int _read_select_(struct socket_class_t *s, int sec)
             RETURN_VAL(ret);
         case 0:
             debug_printf("NO data within %d seconds.", handle->tv.tv_sec);
-            RETURN_VAL(ret);
+            RETURN_VAL(EFAIL);
         default:
             break;
     }
@@ -153,7 +161,7 @@ static int _read_select_(struct socket_class_t *s, int sec)
 
 
     debug_printf("Data is available now.");
-
+#endif
     return EFAIL;
 }
 
