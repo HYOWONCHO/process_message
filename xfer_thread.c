@@ -83,7 +83,7 @@ struct xfer_packet_t *xfer_create_recording_list_packet(struct xfer_handle_t *h)
     sz_wwwlist = list_get_size(h->tm->s);
 
     sz_pkt = 4;
-    __BUF_HEX_PRINT(pkt->body, "start packet", sz_pkt);
+    //__BUF_HEX_PRINT(pkt->body, "start packet", sz_pkt);
     // 0xFF : Record file name max length, 0x04 : END PREFIX
     //pkt->body = realloc(pkt->body, (sz_wwwlist * 0xFF) +  sz_pkt);
     dest += sz_pkt;
@@ -114,13 +114,13 @@ struct xfer_packet_t *xfer_create_recording_list_packet(struct xfer_handle_t *h)
         //sz_pkt += cpylen+1; 
     }
 
-    __BUF_HEX_PRINT(pkt->body, "list packet", sz_pkt);
+    //__BUF_HEX_PRINT(pkt->body, "list packet", sz_pkt);
 
 
-    sz_pkt += 4;
-    pkt->body = realloc(pkt->body, sz_pkt);
-    memcpy_s((void *)dest, 4, (const void *)&end_prefix, 4);
-    dest += 4;
+    //sz_pkt += 4;
+    //pkt->body = realloc(pkt->body, sz_pkt);
+    //memcpy_s((void *)dest, 4, (const void *)&end_prefix, 4);
+    //dest += 4;
 
     if( (XFER_PADDING_MOD(sz_pkt) != 0) &&  (sz_pkt != 0)) {
         int remind_padding = XFER_PADDING_CAL(sz_pkt);
@@ -128,6 +128,8 @@ struct xfer_packet_t *xfer_create_recording_list_packet(struct xfer_handle_t *h)
         memzero_s(dest, remind_padding);
         sz_pkt += remind_padding;
     }
+
+    memcpy_s((void *)&pkt->body[sz_pkt - 4], 4, (const void *)&end_prefix, 4);
 
     h->pkt = pkt;
     h->pkt->sz_payload = sz_pkt;
@@ -166,6 +168,25 @@ static int xfer_interact_init(socket_class_t **s)
 
 }
 
+static int xfer_sending(void *handle)
+{
+    struct xfer_handle_t *xfer;
+    char *sending_buf = NULL;
+    int i = 0;
+    int sending_cnt = 0;
+
+    xfer = (struct xfer_handl_t *)handle;
+    sending_cnt = xfer->pkt->sz_payload / 64;
+    sending_buf = (char *)xfer->pkt->body;
+    for ( i = 0; i  < sending_cnt; i++)  {
+        xfer->sck->send(xfer->sck, sending_buf, 64); 
+        __BUF_HEX_PRINT(sending_buf, "sending payload", 64);
+        sending_buf += 64;
+    }
+
+    return 0;
+}
+
 void *xfer_start(void *priv)
 {
     struct xfer_handle_t *xfer = NULL;
@@ -193,9 +214,8 @@ void *xfer_start(void *priv)
     __BUF_HEX_PRINT(xfer->pkt->body, "sending packet", xfer->pkt->sz_payload);
     
 
-    debug_printf();
-    xfer->sck->send(xfer->sck, xfer->pkt->body, 128);
-    debug_printf();
+    //xfer->sck->send(xfer->sck, xfer->pkt->body, 128);
+    xfer_sending((void *)xfer);
      
     MEM_RELEASE(xfer->pkt);
     return NULL;

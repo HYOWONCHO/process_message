@@ -6,6 +6,12 @@
 #define CONNECT_IP_PORT     12345
 
 
+
+static const int XFER_START_PREFIX =           0x53855073;
+static const int XFER_END_PREFIX =             0x83558049;
+
+
+
 struct svr_handle_t {
     socket_class_t *sck;
     fd_set read_fd_set;
@@ -38,14 +44,19 @@ void *create_scr_socket(void)
 
 }
 
-
 void *svr_probe(void *priv)
 {
+
     int ret = 0;
     int connections[5] = {-1, -1, -1, -1, -1};
     int i = 0;
     int fd_max = 0;
-    uint8_t buf[128];
+    uint8_t buf[64];
+    uint8_t *_buf;
+
+    int is_start = 0;
+    int is_finish = 0;
+    int recv_cnt = 1;
     
     client_addr_t client_addr;
     struct svr_handle_t *h = NULL;
@@ -78,6 +89,8 @@ void *svr_probe(void *priv)
     fd_max = h->sck->_sockfd;
 
     //debug_printf("sockfd : %d", h->sck->_sockfd);
+    //
+
 
 
     for(;;) {
@@ -119,14 +132,57 @@ void *svr_probe(void *priv)
                         continue;
                     }
                     
-                    ret = newsck->recv(newsck, buf, 128);
+                    ret = newsck->recv(newsck, buf, 64);
                     if(ret <= 0) {  //if you want to finish
+
+                        if(is_start && !is_finish) {
+                            err_printf("Packet not complete, please re-try");
+                        }
+
+                        __BUF_HEX_PRINT(_buf, "recv packet", recv_cnt * 64);
+                        MEM_RELEASE(_buf);
+                        is_start = is_finish = 0L;
+                        recv_cnt = 1;
+
+                        
                         debug_printf("socket clear");
                         FD_CLR(i, &reads);
                         socket_close(newsck);
                     }
                     else {
-                        __BUF_HEX_PRINT(buf, "recv", 128);
+
+                        if(is_start) {
+                            recv_cnt++;
+                        }
+                        //__BUF_HEX_PRINT(buf, "recv", 64);
+                        if(!is_start) {
+                            if(memcmp((void *)&buf[0], &XFER_START_PREFIX, 4) == 0) {
+                                debug_printf("pakcet sync start");
+                                _buf = calloc(recv_cnt * 64, sizeof(char));
+                                is_start = 1;
+                                memcpy_s(_buf, 64, buf, 64);
+                                __BUF_HEX_PRINT(_buf, "*** recv ****", 64);
+                            }
+
+                            if(memcmp((void *)&buf[64-4], &XFER_END_PREFIX, 4) == 0) {
+                                debug_printf(" one pakcet sync finish");
+                                is_finish = 1;
+                            }
+                        }
+
+                        if(is_start && !is_finish) {
+                            //debug_printf("recv_cnt : %d", recv_cnt);
+                            if(recv_cnt >= 2) {
+                                _buf = realloc(_buf, 64 * recv_cnt);
+                                memcpy_s(&_buf[(recv_cnt - 1) * 64], 64, buf, 64);
+                                __BUF_HEX_PRINT(&_buf[(recv_cnt -1) * 64], "--- recv ---", 64);
+
+                                if(memcmp((void *)&buf[64-4], &XFER_END_PREFIX, 4) == 0) {
+                                    debug_printf("pakcet sync finish");
+                                    is_finish = 1;
+                                }
+                            }
+                        }
                     }
                     
                     //_BUF
@@ -142,8 +198,7 @@ void *svr_probe(void *priv)
                 if(newsck->_sockfd >= 0) {
                     for( i = 0 ; i < 5 ; i ++ ) {
                         if(connections[i] < 0) {
-                            connections[i]  = newsck->_sockfd;
-                        }
+                             connections[i]  = newsck->_sockfd; }
                     }
                 }
                 else {
