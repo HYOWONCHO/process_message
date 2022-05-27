@@ -44,6 +44,22 @@ void *create_scr_socket(void)
 
 }
 
+static void parse_file_name(void *payload, int len)
+{ 
+    uint8_t *p = (uint8_t *)payload;
+    uint32_t fstr_len = 0UL;
+
+    p +=4; // skip the header
+    len -= 4;
+
+    while((fstr_len = strlen(p)) != 0) {
+        debug_printf("File Name : %s (len:%d)", p, fstr_len);
+        len -= (fstrlen+1);
+        p += (fstr_len+1);
+    }
+    return;
+}
+
 void *svr_probe(void *priv)
 {
 
@@ -143,6 +159,8 @@ void *svr_probe(void *priv)
                         }
 
                         __BUF_HEX_PRINT(_buf, "recv packet", recv_cnt * 64);
+
+                        parse_file_name(_buf, recv_cnt * 64);
                         MEM_RELEASE(_buf);
                         is_start = is_finish = 0L;
                         recv_cnt = 1;
@@ -164,7 +182,7 @@ void *svr_probe(void *priv)
                                 _buf = calloc(recv_cnt * 64, sizeof(char));
                                 is_start = 1;
                                 memcpy_s(_buf, 64, buf, 64);
-                                __BUF_HEX_PRINT(_buf, "*** recv ****", 64);
+                                //__BUF_HEX_PRINT(_buf, "*** recv ****", 64);
                             }
 
                             if(memcmp((void *)&buf[64-4], &XFER_END_PREFIX, 4) == 0) {
@@ -178,7 +196,7 @@ void *svr_probe(void *priv)
                             if(recv_cnt >= 2) {
                                 _buf = realloc(_buf, 64 * recv_cnt);
                                 memcpy_s(&_buf[(recv_cnt - 1) * 64], 64, buf, 64);
-                                __BUF_HEX_PRINT(&_buf[(recv_cnt -1) * 64], "--- recv ---", 64);
+                                //__BUF_HEX_PRINT(&_buf[(recv_cnt -1) * 64], "--- recv ---", 64);
 
                                 if(memcmp((void *)&buf[64-4], &XFER_END_PREFIX, 4) == 0) {
                                     debug_printf("pakcet sync finish");
