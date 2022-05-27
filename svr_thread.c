@@ -59,8 +59,15 @@ void *svr_probe(void *priv)
     fd_set reads;
     fd_set cpyreads;
 
-    THREAD_DETACH(p->tid[0]);
 
+    debug_printf("Thread ID : %ld, %ld", p->tid[0], pthread_self());
+    //THREAD_DETACH(pthread_self());
+
+    //sleep(10);
+
+    //for(;;) {}
+
+#if  1
     h = (struct svr_handle_t *)create_scr_socket();
 
     //connections[0] = h->sck->_sockfd;
@@ -70,10 +77,9 @@ void *svr_probe(void *priv)
     FD_SET(h->sck->_sockfd, &reads);
     fd_max = h->sck->_sockfd;
 
-    debug_printf("sockfd : %d", h->sck->_sockfd);
+    //debug_printf("sockfd : %d", h->sck->_sockfd);
 
 
-#if 1 
     for(;;) {
         cpyreads = reads;
 #if 0
@@ -85,12 +91,15 @@ void *svr_probe(void *priv)
         }
 #endif
         ret = select(fd_max + 1, &cpyreads, NULL, NULL, &timeout);
+        //ret = select(fd_max + 1, &cpyreads, NULL, NULL, NULL);
         if(ret == -1) {
             err_printf("select() failed - (%s)", SYS_ERROR_MSG());
             continue;
         }
 
         if(ret == 0) {
+            timeout.tv_sec = 5;
+            timeout.tv_usec = 5000;
             debug_printf("timeout - (%s)", SYS_ERROR_MSG());
             continue;
         }
@@ -99,7 +108,7 @@ void *svr_probe(void *priv)
             if(FD_ISSET(i, &cpyreads)) {
                 if( i == h->sck->_sockfd ) {
                     newsck = h->sck->accept(h->sck, &client_addr);
-                    debug_printf("sockfd : %d", newsck->_sockfd);
+                    //debug_printf("sockfd : %d", newsck->_sockfd);
                     FD_SET(newsck->_sockfd, &reads);
                     if(fd_max < newsck->_sockfd) {
                         fd_max = newsck->_sockfd;
@@ -112,9 +121,15 @@ void *svr_probe(void *priv)
                     
                     ret = newsck->recv(newsck, buf, 128);
                     if(ret <= 0) {  //if you want to finish
+                        debug_printf("socket clear");
                         FD_CLR(i, &reads);
                         socket_close(newsck);
                     }
+                    else {
+                        __BUF_HEX_PRINT(buf, "recv", 128);
+                    }
+                    
+                    //_BUF
                 }
             }
         }
@@ -152,6 +167,8 @@ void *svr_probe(void *priv)
 #endif
     }
 #endif 
+
+    pthread_exit(NULL);
 
 
 

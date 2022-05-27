@@ -70,6 +70,7 @@ static socket_class_t *_accept_(socket_class_t *s, client_addr_t *c)
 
 static int _send_(socket_class_t *s, const char *str, int max_len)
 {
+    debug_printf("fd : %d , len : %d", s->_sockfd, max_len);
     return send(s->_sockfd, str, max_len, 0);
 }
 

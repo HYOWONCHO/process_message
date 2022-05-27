@@ -17,12 +17,9 @@
 
 
 
-
-
-
-
 int main(int argc, char *argv[])
 {
+    int *join_state = NULL;
 
     void *svr_probe(void *priv);
 
@@ -36,10 +33,18 @@ int main(int argc, char *argv[])
     }
     
     transmit->start[0] = svr_probe;
-    if(THREAD_CREATE(&transmit->tid[0], NULL, transmit->start[0], (void *)transmit) < 0) {
+    if(THREAD_CREATE(&transmit->tid[0], NULL, transmit->start[0], (void *)transmit) != 0) {
         err_printf("%s", SYS_ERROR_MSG());
         return -1;
     }
 
+    //debug_printf("Main Thread ID: %ld, self : %ld", transmit->tid[0], pthread_self());
+    THREAD_JOIN(transmit->tid[0], &join_state);
+
+    //THREAD_JOIN(transmit->tid[0], &join_state);
+    //THREAD_DETACH(transmit->tid[0]);
+    debug_printf("finish server");
+
+    //sleep(10);
     return 0;
 }

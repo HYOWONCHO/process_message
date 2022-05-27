@@ -150,14 +150,17 @@ static void _print_recording_list(list_element_t *l)
     }
 }
 
-static int xfer_interact_init(socket_class_t *s)
+static int xfer_interact_init(socket_class_t **s)
 {
-    s = init_socket(AF_INET, SOCK_STREAM);
-    if(s == NULL) {
+    socket_class_t *_s;
+    _s = init_socket(AF_INET, SOCK_STREAM);
+    if(_s == NULL) {
         return ESNULLP;
     }
 
-    s->connect(s, (const char *)SOCKET_IP_ADDR, SOCKET_IP_PORT);
+    _s->connect(_s, (const char *)SOCKET_IP_ADDR, SOCKET_IP_PORT);
+
+    *s = _s;
 
     return EOK;
 
@@ -172,12 +175,12 @@ void *xfer_start(void *priv)
 
     //printf("handle address: %p", handle);
 
-    //if(xfer_interact_init(xfer->sck) != EOK) {
-    //   return NULL;
-    //}
+    if(xfer_interact_init(&xfer->sck) != EOK) {
+       return NULL;
+    }
 
     debug_printf("wait capture thread wait ~~~");
-    COND_WAIT(xfer->tm);
+    //COND_WAIT(xfer->tm);
 
     debug_printf("wake-up xfer thread !!!");
 
@@ -189,8 +192,11 @@ void *xfer_start(void *priv)
     xfer_create_recording_list_packet(xfer);
     __BUF_HEX_PRINT(xfer->pkt->body, "sending packet", xfer->pkt->sz_payload);
     
-     
 
+    debug_printf();
+    xfer->sck->send(xfer->sck, xfer->pkt->body, 128);
+    debug_printf();
+     
     MEM_RELEASE(xfer->pkt);
     return NULL;
 
