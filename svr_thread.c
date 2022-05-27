@@ -138,6 +138,9 @@ void *svr_probe(void *priv)
                         if(is_start && !is_finish) {
                             err_printf("Packet not complete, please re-try");
                         }
+                        else {
+                            debug_printf("packet arrived on your buffer (%p)", _buf);
+                        }
 
                         __BUF_HEX_PRINT(_buf, "recv packet", recv_cnt * 64);
                         MEM_RELEASE(_buf);
