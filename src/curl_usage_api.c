@@ -19,7 +19,7 @@ int curl_getinfo(const char *url)
     }
 
     curl_easy_setopt(curl,CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
     res = curl_easy_perform(curl);
 
     if(res != CURLE_OK) {
