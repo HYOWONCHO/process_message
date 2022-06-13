@@ -66,8 +66,9 @@ int curl_url2file(const char *url, const char *path)
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 
     // switch on full protocol/debug output while testing
-    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0L);
 
+    //curl_easy_setopt(curl_handle, CURLOPT_MUTE, 1L);
     // disable progress meter, set to 0L ot enable it
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 
